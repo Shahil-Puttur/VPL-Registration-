@@ -2,16 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VPL 2K26 | Player Registration</title>
-    <!-- Tailwind CSS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VPL 2K26 | Standard HTML Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
-    <!-- html2canvas for Download Feature -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
     
     <script>
         tailwind.config = {
@@ -24,500 +21,466 @@
         }
     </script>
     <style>
-        body { background-color: #0B0C10; color: white; overflow-x: hidden; }
+        body { background-color: #0B0C10; color: white; overflow-x: hidden; font-family: 'Montserrat', sans-serif;}
         .glass { background: rgba(31, 40, 51, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(102, 252, 241, 0.2); }
-        .role-radio:checked + label { background-color: #F2A900; color: #0B0C10; border-color: #F2A900; transform: scale(1.05); }
-        .loader { border: 3px solid #1F2833; border-top: 3px solid #F2A900; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; display: none; margin: 0 auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Ticking UI Styles */
+        .role-radio:checked + label { 
+            background-color: #F2A900; 
+            color: #0B0C10; 
+            border-color: #F2A900; 
+            transform: scale(1.03); 
+            box-shadow: 0 4px 20px rgba(242, 169, 0, 0.3);
+        }
+        .role-radio + label .tick-icon { display: none; }
+        .role-radio + label .empty-icon { display: inline-block; opacity: 0.4; }
+        .role-radio:checked + label .empty-icon { display: none; }
+        .role-radio:checked + label .tick-icon { 
+            display: inline-block; 
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; 
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Sprite Sheet Animation & 3D Faking Tricks */
+        .sprite-character {
+            width: 100%;
+            height: 100%;
+            background: url('cartoon.jpg') no-repeat;
+            background-size: 400% 300%; 
+            animation: typingLoop 0.6s step-end infinite;
+            transform: perspective(400px) rotateY(-25deg) scale(1.1);
+            transform-origin: center center;
+            mix-blend-mode: screen; 
+        }
+
+        @keyframes typingLoop {
+            0% { background-position: 0% 0%; }
+            25% { background-position: 33.333% 0%; }
+            50% { background-position: 66.666% 0%; }
+            75% { background-position: 100% 0%; }
+            100% { background-position: 100% 0%; }
+        }
+
         .hide { display: none !important; }
-        /* Hide scrollbar for clean UI */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #0B0C10; }
         ::-webkit-scrollbar-thumb { background: #1F2833; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #66FCF1; }
     </style>
 </head>
-<body class="min-h-screen font-sans relative">
+<body class="min-h-screen relative overflow-hidden" id="mainBody">
 
-    <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-[800px] h-[800px] bg-vplCyan opacity-10 rounded-full blur-[120px] -z-10"></div>
+    <!-- SPLASH / LOADING SCREEN (3 Seconds) -->
+    <div id="splashScreen" class="fixed inset-0 bg-vplDark z-[200] flex flex-col items-center justify-center transition-opacity duration-700">
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-vplCyan/10 rounded-full blur-[80px] pointer-events-none"></div>
+        
+        <div class="text-vplCyan font-black tracking-[0.4em] text-sm md:text-base mb-10 animate-pulse drop-shadow-[0_0_10px_rgba(102,252,241,0.4)]">
+            SYSTEM INITIALIZING...
+        </div>
 
-    <!-- Admin Top Bar (Hidden by default) -->
-    <div id="adminPanelBar" class="bg-red-600 text-white px-4 py-2 flex justify-between items-center text-sm font-bold hide shadow-lg z-50 relative">
-        <div><i class="fa-solid fa-shield-halved mr-2"></i> ADMIN PANEL ACTIVE</div>
-        <div id="storageTracker">Storage: Loading...</div>
-        <button onclick="logoutAdmin()" class="bg-black px-3 py-1 rounded hover:bg-gray-800 transition">Logout</button>
+        <div class="relative w-[160px] h-[160px] md:w-[200px] md:h-[200px]">
+            <div class="sprite-character absolute inset-0"></div>
+            <div class="absolute inset-[-15px] border-2 border-vplCyan/10 rounded-full animate-[spin_4s_linear_infinite] border-t-vplCyan shadow-[0_0_20px_rgba(102,252,241,0.2)]"></div>
+            <div class="absolute inset-[-30px] border border-vplGold/10 rounded-full animate-[spin_6s_linear_infinite_reverse] border-b-vplGold"></div>
+        </div>
+
+        <div class="mt-16 text-center z-10">
+            <p class="text-white/40 text-[9px] md:text-[10px] font-bold tracking-widest uppercase mb-1.5">Registration Portal</p>
+            <p class="text-vplGold text-sm md:text-base font-black tracking-widest uppercase drop-shadow-[0_0_15px_rgba(242,169,0,0.5)]">
+                Developed by Shahil
+            </p>
+        </div>
     </div>
 
-    <!-- Header & Navigation -->
-    <header class="text-center py-6 relative">
-        <button id="adminLoginBtn" onclick="openAdminModal()" class="absolute top-6 right-6 text-gray-500 hover:text-vplGold transition"><i class="fa-solid fa-lock text-xl"></i></button>
-        <h1 class="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-vplGold to-yellow-200 tracking-wider">VPL 2K26</h1>
-        <p class="text-vplCyan mt-1 font-bold tracking-widest text-xs md:text-sm uppercase">Vidyarashmi Premier League</p>
+    <!-- Responsive Glowing Background -->
+    <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-[150vw] h-[150vw] md:w-[800px] md:h-[800px] bg-vplCyan opacity-10 rounded-full blur-[90px] md:blur-[120px] -z-10 pointer-events-none"></div>
+
+    <div id="adminPanelBar" class="bg-red-600 text-white px-4 py-2 flex justify-between items-center text-xs sm:text-sm font-bold hide shadow-lg z-50 sticky top-0">
+        <div><i class="fa-solid fa-lock mr-2"></i> ADMIN EXPERT UI</div>
+        <button onclick="logoutAdmin()" class="bg-black/40 hover:bg-black/60 px-3 py-1.5 rounded-md transition-colors">Logout</button>
+    </div>
+
+    <!-- Header -->
+    <header class="text-center py-8 sm:py-10 relative z-10">
+        <button id="adminLoginBtn" onclick="openAdminModal()" class="absolute top-4 right-4 sm:top-6 sm:right-6 text-white/30 hover:text-vplGold transition-colors p-2"><i class="fa-solid fa-lock text-xl"></i></button>
+        <h1 class="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-vplGold via-yellow-200 to-vplGold tracking-tight">VPL 2K26</h1>
+        <p class="text-vplCyan mt-2 font-bold tracking-[0.2em] text-[10px] md:text-xs uppercase">Vidyarashmi Premier League</p>
     </header>
 
-    <!-- Admin Login Modal -->
-    <div id="adminModal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center hide backdrop-blur-sm">
-        <div class="glass p-8 rounded-xl w-96 max-w-[90%] relative">
-            <button onclick="closeAdminModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
-            <h3 class="text-2xl font-bold mb-4 text-vplGold border-b border-gray-600 pb-2">Admin Login</h3>
-            <input type="text" id="adminUser" placeholder="Username" class="w-full bg-vplDark border border-gray-600 rounded mb-3 px-4 py-2 text-white focus:border-vplGold outline-none">
-            <input type="password" id="adminPass" placeholder="Password" class="w-full bg-vplDark border border-gray-600 rounded mb-4 px-4 py-2 text-white focus:border-vplGold outline-none">
-            <button onclick="loginAdmin()" class="w-full bg-vplGold text-black font-bold py-2 rounded hover:bg-yellow-400 transition">Login</button>
-        </div>
-    </div>
-
-    <!-- Download Format Modal -->
-    <div id="downloadModal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center hide backdrop-blur-sm">
-        <div class="glass p-8 rounded-xl w-96 max-w-[90%] text-center relative">
-            <button onclick="closeDownloadModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
-            <h3 class="text-2xl font-black mb-2 text-white">Download Card</h3>
-            <p class="text-sm text-gray-400 mb-6">Select layout format for Auction</p>
-            <div class="grid grid-cols-2 gap-4">
-                <button onclick="executeDownload('mobile')" class="bg-vplCard border border-vplCyan rounded-lg p-4 hover:bg-vplCyan hover:text-black transition group flex flex-col items-center">
-                    <i class="fa-solid fa-mobile-screen text-3xl mb-2 text-vplCyan group-hover:text-black"></i>
-                    <span class="font-bold">Mobile</span>
-                    <span class="text-xs opacity-70">9:16 (Status)</span>
-                </button>
-                <button onclick="executeDownload('pc')" class="bg-vplCard border border-vplGold rounded-lg p-4 hover:bg-vplGold hover:text-black transition group flex flex-col items-center">
-                    <i class="fa-solid fa-desktop text-3xl mb-2 text-vplGold group-hover:text-black"></i>
-                    <span class="font-bold">PC / Projector</span>
-                    <span class="text-xs opacity-70">16:9 (Auction)</span>
-                </button>
-            </div>
-            <div id="downloadingLoader" class="mt-4 text-vplCyan font-bold hide"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Generating High Quality Image...</div>
-        </div>
-    </div>
-
-    <!-- SECTION 1: REGISTRATION FORM -->
-    <main id="registration-section" class="max-w-md mx-auto px-4 pb-12">
-        <div class="glass p-6 rounded-2xl shadow-2xl">
-            <h2 class="text-xl font-bold mb-6 text-center border-b border-gray-600 pb-3">Player Registration</h2>
-            <form id="regForm" onsubmit="event.preventDefault(); submitRegistration();">
-                <!-- Photo Upload -->
-                <div class="mb-6 text-center">
-                    <label for="photoUpload" class="cursor-pointer block">
-                        <div id="imagePreview" class="w-28 h-28 mx-auto rounded-full bg-vplCard border-2 border-dashed border-vplCyan flex items-center justify-center overflow-hidden hover:border-vplGold transition-all">
-                            <div id="uploadPlaceholder" class="text-gray-400 flex flex-col items-center">
-                                <i class="fa-solid fa-camera text-xl mb-1"></i>
-                                <span class="text-[10px]">Upload Photo</span>
+    <!-- MAIN: Register -->
+    <main id="registerView" class="max-w-md mx-auto px-4 pb-24 z-10 relative">
+        <div class="glass p-6 sm:p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.4)] border-white/5 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-vplGold to-vplCyan"></div>
+            <h2 class="text-xl sm:text-2xl font-black mb-6 sm:mb-8 text-center text-white tracking-wide">PLAYER REGISTRATION</h2>
+            
+            <form id="regForm" onsubmit="event.preventDefault(); submitRegistration();" class="space-y-6">
+                <div class="flex justify-center mb-2">
+                    <label class="cursor-pointer group relative">
+                        <div id="imgContainer" class="w-32 h-32 sm:w-36 sm:h-36 rounded-full overflow-hidden bg-black/40 border-2 border-dashed border-vplCyan/50 group-hover:border-vplGold transition-all flex items-center justify-center shadow-inner">
+                            <div id="uploadPlaceholder" class="text-white/50 flex flex-col items-center group-hover:text-vplGold transition-colors">
+                                <i class="fa-solid fa-camera text-2xl sm:text-3xl mb-2"></i>
+                                <span class="text-[9px] sm:text-[10px] font-bold tracking-widest uppercase">Upload Photo</span>
                             </div>
-                            <img id="previewImg" class="w-full h-full object-cover hide" alt="Preview">
+                            <img id="previewImg" class="w-full h-full object-cover hide transition-transform group-hover:scale-105" alt="Preview">
                         </div>
+                        <input type="file" id="photoUpload" accept="image/*" class="hidden" onchange="previewImage(event)" required>
                     </label>
-                    <input type="file" id="photoUpload" accept="image/*" class="hidden" onchange="previewImage(event)" required>
                 </div>
-                <!-- Inputs -->
-                <div class="mb-4">
-                    <input type="text" id="playerName" class="w-full bg-vplCard border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-vplCyan transition-all" placeholder="Full Name" required>
+                <div class="space-y-4">
+                    <input type="text" id="playerName" placeholder="Full Name" required class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 focus:border-vplCyan outline-none transition-all placeholder:text-white/30 text-white font-medium text-sm sm:text-base">
+                    <input type="tel" id="playerPhone" placeholder="Phone Number" required class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 focus:border-vplCyan outline-none transition-all placeholder:text-white/30 text-white font-medium text-sm sm:text-base">
                 </div>
-                <div class="mb-6">
-                    <input type="tel" id="playerPhone" class="w-full bg-vplCard border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-vplCyan transition-all" placeholder="Phone Number" required>
-                </div>
-                <!-- Role Selection -->
-                <div class="mb-8 grid grid-cols-3 gap-2">
-                    <div class="relative">
-                        <input type="radio" name="role" id="batsman" value="Batsman" class="hidden role-radio" required>
-                        <label for="batsman" class="block text-center bg-vplCard border border-gray-600 rounded-lg py-2 cursor-pointer transition-all text-xs font-bold uppercase">Batsman</label>
+                
+                <div class="grid grid-cols-3 gap-2 sm:gap-3 pt-2">
+                    <div class="relative h-full">
+                        <input type="radio" name="role" id="Batsman" value="Batsman" class="hidden role-radio" required checked>
+                        <label for="Batsman" class="flex flex-col items-center justify-center h-full bg-black/30 border border-white/10 text-white/50 hover:bg-black/50 hover:text-white py-3 rounded-xl cursor-pointer transition-all text-[10px] sm:text-xs font-black uppercase tracking-wider">
+                            <i class="fa-regular fa-circle empty-icon text-sm sm:text-base mb-1.5"></i>
+                            <i class="fa-solid fa-circle-check tick-icon text-sm sm:text-base mb-1.5"></i>
+                            <span>Batsman</span>
+                        </label>
                     </div>
-                    <div class="relative">
-                        <input type="radio" name="role" id="bowler" value="Bowler" class="hidden role-radio">
-                        <label for="bowler" class="block text-center bg-vplCard border border-gray-600 rounded-lg py-2 cursor-pointer transition-all text-xs font-bold uppercase">Bowler</label>
+                    <div class="relative h-full">
+                        <input type="radio" name="role" id="Bowler" value="Bowler" class="hidden role-radio">
+                        <label for="Bowler" class="flex flex-col items-center justify-center h-full bg-black/30 border border-white/10 text-white/50 hover:bg-black/50 hover:text-white py-3 rounded-xl cursor-pointer transition-all text-[10px] sm:text-xs font-black uppercase tracking-wider">
+                            <i class="fa-regular fa-circle empty-icon text-sm sm:text-base mb-1.5"></i>
+                            <i class="fa-solid fa-circle-check tick-icon text-sm sm:text-base mb-1.5"></i>
+                            <span>Bowler</span>
+                        </label>
                     </div>
-                    <div class="relative">
-                        <input type="radio" name="role" id="allrounder" value="All Rounder" class="hidden role-radio">
-                        <label for="allrounder" class="block text-center bg-vplCard border border-gray-600 rounded-lg py-2 cursor-pointer transition-all text-xs font-bold uppercase flex flex-col items-center justify-center">All Rounder</label>
+                    <div class="relative h-full">
+                        <input type="radio" name="role" id="AllRounder" value="All Rounder" class="hidden role-radio">
+                        <label for="AllRounder" class="flex flex-col items-center justify-center h-full bg-black/30 border border-white/10 text-white/50 hover:bg-black/50 hover:text-white py-3 rounded-xl cursor-pointer transition-all text-[10px] sm:text-xs font-black uppercase tracking-wider">
+                            <i class="fa-regular fa-circle empty-icon text-sm sm:text-base mb-1.5"></i>
+                            <i class="fa-solid fa-circle-check tick-icon text-sm sm:text-base mb-1.5"></i>
+                            <span class="leading-tight">All Round</span>
+                        </label>
                     </div>
                 </div>
-                <!-- Submit -->
-                <button type="submit" id="submitBtn" class="w-full bg-gradient-to-r from-vplGold to-yellow-500 text-vplDark font-black text-lg py-3 rounded-lg shadow-lg hover:shadow-yellow-500/50 transition-all transform hover:-translate-y-1">
-                    <span id="btnText">DONE <i class="fa-solid fa-check-circle ml-2"></i></span>
-                    <div id="btnLoader" class="loader"></div>
+
+                <button type="submit" id="submitBtn" class="w-full bg-vplCyan text-vplDark font-black py-4 rounded-xl shadow-[0_0_20px_rgba(102,252,241,0.2)] hover:shadow-[0_0_30px_rgba(102,252,241,0.4)] transition-all mt-4 tracking-widest text-sm flex items-center justify-center gap-2">
+                    <span id="btnText">SUBMIT ENTRY <i class="fa-solid fa-arrow-right ml-1"></i></span>
+                    <i id="btnLoader" class="fa-solid fa-circle-notch fa-spin hide text-vplDark"></i>
                 </button>
             </form>
             <div class="text-center mt-6">
-                <button onclick="viewPlayers()" class="text-vplCyan text-sm font-bold hover:underline">Skip to Player List <i class="fa-solid fa-arrow-right"></i></button>
+                <button onclick="setView('list')" class="text-white/50 text-[11px] font-bold uppercase tracking-widest hover:text-vplCyan transition-colors">Skip to Player List</button>
             </div>
         </div>
     </main>
 
-    <!-- SECTION 2: THANKS -->
-    <section id="thanks-section" class="max-w-md mx-auto px-4 pb-12 hide text-center">
-        <div class="glass p-8 rounded-2xl shadow-2xl">
-            <div class="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-[0_0_30px_rgba(34,197,94,0.5)]">
-                <i class="fa-solid fa-check text-4xl text-white"></i>
+    <!-- MAIN: Thanks -->
+    <main id="thanksView" class="max-w-md mx-auto px-4 pb-24 z-10 relative hide">
+        <div class="glass p-10 sm:p-12 rounded-3xl border-white/5 shadow-2xl relative overflow-hidden text-center">
+            <div class="absolute inset-0 bg-green-500/5"></div>
+            <div class="w-20 h-20 sm:w-24 sm:h-24 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-8 shadow-[0_0_50px_rgba(34,197,94,0.3)] relative z-10">
+                <i class="fa-solid fa-check text-3xl sm:text-4xl text-white"></i>
             </div>
-            <h2 class="text-2xl font-black text-white mb-2">Success!</h2>
-            <p class="text-gray-300 mb-6 text-sm">Welcome to VPL 2K26. Your profile is live in the draft!</p>
-            <button onclick="viewPlayers()" class="bg-vplCyan text-vplDark font-bold py-2 px-6 rounded-full w-full mb-3">View Player List</button>
-            <button onclick="showRegistration()" class="text-gray-400 text-sm hover:text-white border border-gray-600 py-2 px-6 rounded-full w-full">Register Another</button>
+            <h2 class="text-2xl sm:text-3xl font-black mb-3 text-white tracking-tight relative z-10">SUCCESS!</h2>
+            <p class="text-white/60 mb-10 text-xs sm:text-sm relative z-10">Player registered to the VPL 2K26 player list.</p>
+            <div class="space-y-4 relative z-10">
+                <button onclick="setView('list')" class="w-full bg-vplCyan text-vplDark font-black py-4 rounded-xl shadow-lg hover:shadow-vplCyan/20 transition-all uppercase tracking-widest text-sm">View Player List</button>
+                <button onclick="setView('register')" class="w-full bg-black/40 border border-white/10 text-white font-bold py-4 rounded-xl hover:bg-black/60 transition-all uppercase tracking-widest text-sm">Register Another</button>
+            </div>
         </div>
-    </section>
+    </main>
 
-    <!-- SECTION 3: PLAYER LIST -->
-    <section id="list-section" class="max-w-6xl mx-auto px-4 pb-12 hide">
-        <div class="flex justify-between items-center mb-6 border-b border-gray-700 pb-4">
-            <h2 class="text-2xl font-black text-white"><span class="text-vplGold">VPL 2K26</span> DRAFT</h2>
-            <button onclick="showRegistration()" class="bg-gray-800 px-4 py-2 rounded text-white text-sm font-bold border border-gray-600 hover:border-white transition">
-                <i class="fa-solid fa-plus mr-1"></i> New
-            </button>
+    <!-- MAIN: List -->
+    <main id="listView" class="max-w-7xl mx-auto px-4 pb-24 z-10 relative hide">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 border-b border-white/10 pb-6 gap-4">
+            <h2 class="text-2xl sm:text-3xl font-black tracking-tight text-white m-0"><span class="text-vplGold">2K26</span> PLAYER LIST</h2>
+            <div class="flex items-center gap-2 sm:gap-3">
+                <button onclick="downloadAllPptx()" class="bg-purple-500/10 border border-purple-500/30 text-purple-400 px-5 py-2.5 rounded-xl text-[11px] font-black tracking-widest flex items-center gap-2 hover:bg-purple-500 hover:text-white transition-all hidden sm:flex">
+                    <i class="fa-solid fa-file-powerpoint"></i> DOWNLOAD ALL CARDS (PPTX)
+                </button>
+                <button onclick="fetchPlayers()" class="p-2.5 rounded-xl bg-black/40 border border-white/10 hover:text-vplCyan transition-colors"><i class="fa-solid fa-arrows-rotate"></i></button>
+                <button onclick="setView('register')" class="bg-vplCyan/10 border border-vplCyan/30 text-vplCyan px-4 sm:px-5 py-2.5 rounded-xl text-[10px] sm:text-[11px] font-black tracking-widest flex items-center gap-2 hover:bg-vplCyan hover:text-vplDark transition-all">
+                    <i class="fa-solid fa-plus"></i> NEW PLAYER
+                </button>
+            </div>
         </div>
-        <div id="playerGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
-    </section>
-
-    <!-- ========================================== -->
-    <!-- HIDDEN TEMPLATES FOR AUCTION CARD DOWNLOAD -->
-    <!-- ========================================== -->
-    <div id="exportContainer" class="fixed -left-[9999px] top-0 bg-[#0B0C10] flex items-center justify-center">
         
-        <!-- PC PROJECTOR FORMAT (16:9) 1280x720 -->
-        <div id="layout-pc" class="hidden w-[1280px] h-[720px] bg-gradient-to-br from-[#0B0C10] to-[#1F2833] border-8 border-vplGold relative overflow-hidden flex shadow-2xl">
-            <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20 z-0"></div>
-            <!-- Left Side: Uncropped Photo -->
-            <div class="w-1/2 h-full bg-black/50 border-r-4 border-vplCyan flex items-center justify-center p-8 z-10 relative">
-                <img id="export-img-pc" class="max-w-full max-h-full object-contain drop-shadow-2xl rounded-xl">
+        <div class="sm:hidden mb-6">
+             <button onclick="downloadAllPptx()" class="w-full bg-purple-500/10 border border-purple-500/30 text-purple-400 px-5 py-3.5 rounded-xl text-[11px] font-black tracking-widest flex items-center justify-center gap-2 hover:bg-purple-500 hover:text-white transition-all">
+                <i class="fa-solid fa-file-powerpoint"></i> DOWNLOAD ALL CARDS
+             </button>
+        </div>
+
+        <div id="playerGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6"></div>
+    </main>
+
+    <!-- LOADING OVERLAY -->
+    <div id="exportLoader" class="fixed inset-0 bg-black/90 backdrop-blur-xl z-[100] flex items-center justify-center p-4 flex-col text-center hide">
+        <i class="fa-solid fa-circle-notch fa-spin text-vplGold text-5xl sm:text-6xl mb-6"></i>
+        <h3 id="exportStatusTitle" class="text-xl sm:text-2xl font-black text-white uppercase tracking-widest">BUILDING EXPORT</h3>
+        <p id="exportStatusCount" class="text-vplCyan font-bold tracking-widest uppercase mt-4 text-xs sm:text-sm"></p>
+    </div>
+
+    <!-- Admin Login Modal -->
+    <div id="adminModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[100] flex items-center justify-center hide p-4">
+        <div class="glass p-6 sm:p-8 rounded-3xl w-full max-w-sm border-white/10 relative shadow-2xl">
+            <button onclick="closeAdminModal()" class="absolute top-4 right-4 sm:top-5 sm:right-5 text-white/40 hover:text-white transition-colors p-2 bg-black/40 rounded-full"><i class="fa-solid fa-xmark"></i></button>
+            <div class="flex items-center gap-3 mb-6 sm:mb-8 border-b border-white/10 pb-5">
+                <div class="w-10 h-10 rounded-full bg-vplGold/20 flex items-center justify-center text-vplGold"><i class="fa-solid fa-lock"></i></div>
+                <h3 class="text-lg sm:text-xl font-black text-white uppercase tracking-widest m-0">Secure Access</h3>
             </div>
-            <!-- Right Side: Details -->
-            <div class="w-1/2 h-full flex flex-col justify-center px-16 z-10">
-                <h1 class="text-7xl font-black text-vplGold mb-2 tracking-wider">VPL 2K26</h1>
-                <p class="text-2xl text-vplCyan tracking-[0.3em] font-bold mb-12 uppercase">Player Auction</p>
-                <div class="bg-black/40 p-8 border-l-8 border-vplGold rounded-r-2xl backdrop-blur-md">
-                    <h2 id="export-name-pc" class="text-6xl font-black text-white mb-4 uppercase truncate leading-tight"></h2>
-                    <div class="flex items-center gap-4">
-                        <i id="export-icon-pc" class="fa-solid text-4xl"></i>
-                        <span id="export-role-pc" class="text-4xl font-bold uppercase tracking-widest text-gray-300"></span>
+            <input type="text" id="adminUser" placeholder="Admin ID" class="w-full bg-black/60 border border-white/10 px-4 py-3.5 rounded-xl outline-none focus:border-vplGold text-white font-medium mb-4 text-sm sm:text-base">
+            <input type="password" id="adminPass" placeholder="Passcode" class="w-full bg-black/60 border border-white/10 px-4 py-3.5 rounded-xl outline-none focus:border-vplGold text-white font-medium mb-6 text-sm sm:text-base">
+            <button onclick="loginAdmin()" class="w-full bg-gradient-to-r from-vplGold to-yellow-600 text-vplDark font-black py-4 rounded-xl shadow-lg hover:shadow-vplGold/20 transition-all uppercase tracking-widest text-sm">Authenticate</button>
+        </div>
+    </div>
+
+    <!-- PC Layout 1280x720 ENHANCED PREMIUM EXPORT FORMATTING -->
+    <div style="position: absolute; top: -9999px; left: -9999px; pointer-events: none; opacity: 0; overflow: hidden; width: 0; height: 0;">
+        <div id="layout-pc" style="width: 1280px; height: 720px; font-family: 'Montserrat', sans-serif; background-color: #0B0C10; color: #ffffff; display: flex; border: 16px solid #F2A900; position: relative; box-sizing: border-box; background-image: radial-gradient(circle at 80% 20%, rgba(102,252,241,0.05) 0%, transparent 50%);">
+            
+            <div style="position: absolute; inset: 0; background-color: transparent; z-index: 0;"></div>
+            
+            <!-- Left Side: Centered & Framed Photo -->
+            <div style="width: 45%; height: 100%; background-color: #11131a; display: flex; align-items: center; justify-content: center; padding: 48px; border-right: 8px solid #66FCF1; position: relative; z-index: 10; box-shadow: 5px 0 30px rgba(0,0,0,0.8); box-sizing: border-box;">
+                
+                <div style="width: 100%; height: 100%; border-radius: 24px; border: 4px solid rgba(102,252,241,0.3); overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); background-color: #000;">
+                    <!-- object-fit: cover and object-position centers the image beautifully -->
+                    <img id="export-img-pc" style="width: 100%; height: 100%; object-fit: cover; object-position: center 20%; filter: drop-shadow(0 0 20px rgba(0,0,0,0.8));">
+                </div>
+
+            </div>
+            
+            <!-- Right Side: Upgraded Typography & Gradients -->
+            <div style="width: 55%; height: 100%; background-color: transparent; display: flex; flex-direction: column; justify-content: center; padding: 0 64px; position: relative; z-index: 10; box-sizing: border-box;">
+                
+                <div style="display: block; margin-bottom: 50px;">
+                    <h1 style="margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; font-size: 110px; font-weight: 900; line-height: 1; color: white; text-shadow: 0 10px 20px rgba(0,0,0,0.5);">VPL 2K26</h1>
+                    <p style="margin: 0; padding: 0; padding-left: 6px; margin-top: 12px; font-family: 'Montserrat', sans-serif; font-size: 32px; font-weight: 700; color: #66FCF1; text-transform: uppercase; letter-spacing: 0.4em;">PLAYER AUCTION</p>
+                </div>
+                
+                <div style="background: linear-gradient(135deg, #1f2833 0%, #11131a 100%); padding: 50px; border-left: 16px solid #F2A900; border-radius: 0 40px 40px 0; box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.8); position: relative; border: 1px solid rgba(255,255,255,0.05); border-left: 16px solid #F2A900;">
+                    <h2 id="export-name-pc" style="margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; font-size: 64px; font-weight: 900; color: white; text-transform: uppercase; line-height: 1.15; margin-bottom: 35px; word-wrap: break-word; white-space: normal; text-shadow: 0 5px 15px rgba(0,0,0,0.3);"></h2>
+                    
+                    <div style="background-color: #0B0C10; display: inline-block; padding: 20px 45px; border-radius: 20px; border: 2px solid rgba(242, 169, 0, 0.3); white-space: nowrap; box-shadow: inset 0 0 20px rgba(242,169,0,0.05), 0 10px 20px rgba(0,0,0,0.4);">
+                        <i id="export-icon-pc" class="fa-solid" style="font-size: 40px; vertical-align: middle; margin-right: 20px; color: #F2A900; filter: drop-shadow(0 0 8px rgba(242,169,0,0.5));"></i>
+                        <span id="export-role-pc" style="margin: 0; padding: 0; padding-top: 4px; font-family: 'Montserrat', sans-serif; font-size: 38px; font-weight: 900; color: #F2A900; text-transform: uppercase; letter-spacing: 0.1em; display: inline-block; vertical-align: middle;"></span>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- MOBILE FORMAT (9:16) 720x1280 -->
-        <div id="layout-mobile" class="hidden w-[720px] h-[1280px] bg-gradient-to-b from-[#0B0C10] to-[#1F2833] border-8 border-vplGold relative overflow-hidden flex flex-col shadow-2xl">
-            <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20 z-0"></div>
-            <!-- Header -->
-            <div class="text-center py-10 z-10 bg-black/60 border-b-4 border-vplCyan">
-                <h1 class="text-6xl font-black text-vplGold tracking-wider">VPL 2K26</h1>
-                <p class="text-xl text-vplCyan tracking-[0.3em] font-bold uppercase mt-2">Player Auction</p>
-            </div>
-            <!-- Middle: Uncropped Photo -->
-            <div class="flex-grow flex items-center justify-center p-8 z-10 bg-black/30">
-                <img id="export-img-mobile" class="max-w-full max-h-[700px] object-contain drop-shadow-2xl rounded-2xl border-4 border-gray-700">
-            </div>
-            <!-- Bottom: Details -->
-            <div class="p-10 z-10 bg-gradient-to-t from-black to-transparent border-t-4 border-vplGold text-center">
-                <h2 id="export-name-mobile" class="text-6xl font-black text-white mb-6 uppercase truncate"></h2>
-                <div class="inline-flex items-center gap-4 bg-[#1F2833] px-8 py-4 rounded-full border-2 border-gray-500 shadow-xl shadow-black/50">
-                    <i id="export-icon-mobile" class="fa-solid text-3xl"></i>
-                    <span id="export-role-mobile" class="text-3xl font-bold uppercase tracking-widest text-gray-200"></span>
-                </div>
             </div>
         </div>
     </div>
 
-    <!-- Firebase SDK & Scripts -->
+    <!-- FIREBASE & LOGIC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, orderBy, query } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // Firebase Config given by User
         const firebaseConfig = {
-            apiKey: "AIzaSyBJSpiM9JezegPH0LkXInfgbyPWyzs6Epk",
-            authDomain: "hideandhunt.firebaseapp.com",
-            databaseURL: "https://hideandhunt-default-rtdb.firebaseio.com/", 
-            projectId: "hideandhunt",
-            storageBucket: "hideandhunt.firebasestorage.app",
-            messagingSenderId: "613687870413",
-            appId: "1:613687870413:web:4053277053fbbd4f05ba84"
+            apiKey: "AIzaSyBrIZGFRB-oQh-jdNAR_15CKCL9W4SsER4",
+            authDomain: "gen-lang-client-0944072808.firebaseapp.com",
+            projectId: "gen-lang-client-0944072808",
+            firestoreDatabaseId: "ai-studio-ad0898ab-627f-4755-b861-1ecaad7c3888",
+            appId: "1:342157735096:web:12fa54957835aeefca704d"
         };
 
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const storage = getStorage(app);
+        const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 
-        // State Variables
-        let selectedFile = null;
         let globalPlayers = []; 
-        let currentDownloadPlayer = null;
-        let isAdmin = sessionStorage.getItem('vpl_admin') === 'true';
+        let isAdmin = localStorage.getItem('vpl_admin') === 'true';
+        let compressedDataUrl = null;
 
-        // Initialize App
-        if(isAdmin) activateAdminUI();
+        if(isAdmin) document.getElementById('adminPanelBar').classList.remove('hide');
 
-        // -------------------------
-        // 1. ADMIN PANEL LOGIC
-        // -------------------------
-        window.openAdminModal = () => document.getElementById('adminModal').classList.remove('hide');
-        window.closeAdminModal = () => document.getElementById('adminModal').classList.add('hide');
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const splash = document.getElementById('splashScreen');
+                splash.style.opacity = '0';
+                setTimeout(() => {
+                    splash.classList.add('hide');
+                    document.getElementById('mainBody').classList.remove('overflow-hidden');
+                }, 700);
+            }, 3000); 
+        });
 
-        window.loginAdmin = () => {
-            const u = document.getElementById('adminUser').value;
-            const p = document.getElementById('adminPass').value;
-            if (u === 'Shahil' && p === '5964') {
-                sessionStorage.setItem('vpl_admin', 'true');
-                isAdmin = true;
-                closeAdminModal();
-                activateAdminUI();
-                viewPlayers(); // refresh list to show delete buttons
-            } else {
-                alert("Incorrect Username or Password!");
-            }
-        };
-
-        window.logoutAdmin = () => {
-            sessionStorage.removeItem('vpl_admin');
-            isAdmin = false;
-            document.getElementById('adminPanelBar').classList.add('hide');
-            document.getElementById('adminLoginBtn').classList.remove('hide');
-            viewPlayers();
-        };
-
-        function activateAdminUI() {
-            document.getElementById('adminPanelBar').classList.remove('hide');
-            document.getElementById('adminLoginBtn').classList.add('hide');
-        }
-
-        // -------------------------
-        // 2. REGISTRATION & UPLOAD
-        // -------------------------
-        window.previewImage = (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                selectedFile = file;
+        window.compressImage = (file) => {
+            return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    document.getElementById('previewImg').src = e.target.result;
-                    document.getElementById('previewImg').classList.remove('hide');
-                    document.getElementById('uploadPlaceholder').classList.add('hide');
-                }
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 600, MAX_HEIGHT = 800;
+                        let { width, height } = img;
+                        if (width > height && width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } 
+                        else if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+                        canvas.width = width; canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.fillStyle = '#0B0C10'; ctx.fillRect(0, 0, width, height);
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.8));
+                    };
+                    img.src = e.target.result;
+                };
                 reader.readAsDataURL(file);
+            });
+        };
+
+        window.previewImage = async (e) => {
+            const file = e.target.files[0];
+            if(file && file.type.startsWith('image/')) {
+                document.getElementById('uploadPlaceholder').classList.add('hide');
+                const pImg = document.getElementById('previewImg');
+                pImg.src = URL.createObjectURL(file);
+                pImg.classList.remove('hide');
+                compressedDataUrl = await window.compressImage(file);
+            } else {
+                alert("Please select a valid image.");
             }
         };
 
         window.submitRegistration = async () => {
-            if (!selectedFile) return alert("Please upload a player photo!");
+            if(!compressedDataUrl) return alert("Upload a photo.");
+            const btnText = document.getElementById('btnText'), btnLoader = document.getElementById('btnLoader');
+            btnText.classList.add('hide'); btnLoader.classList.remove('hide');
 
             const name = document.getElementById('playerName').value;
             const phone = document.getElementById('playerPhone').value;
             const role = document.querySelector('input[name="role"]:checked').value;
-            const fileSizeMB = selectedFile.size / (1024 * 1024); // Size in MB for Storage tracking
-
-            // UI State
-            document.getElementById('btnText').style.display = 'none';
-            document.getElementById('btnLoader').style.display = 'block';
-            document.getElementById('submitBtn').disabled = true;
 
             try {
-                // Upload Image
-                const uniqueFileName = 'vpl_players/' + Date.now() + '_' + selectedFile.name;
-                const storageRef = ref(storage, uniqueFileName);
-                await uploadBytes(storageRef, selectedFile);
-                const photoURL = await getDownloadURL(storageRef);
-
-                // Save to Firestore
                 await addDoc(collection(db, "players"), {
-                    name: name,
-                    phone: phone,
-                    role: role,
-                    photoURL: photoURL,
-                    storagePath: uniqueFileName, // Needed for deleting later
-                    sizeMB: fileSizeMB, // Needed for tracking storage
-                    timestamp: new Date()
+                    name, phone, role, photoData: compressedDataUrl, timestamp: serverTimestamp()
                 });
-
-                document.getElementById('registration-section').classList.add('hide');
-                document.getElementById('thanks-section').classList.remove('hide');
-
-            } catch (error) {
-                console.error(error);
-                alert("Upload failed. Make sure your Firebase Storage & Firestore Rules are set to true!");
-            } finally {
-                // Reset Form
-                document.getElementById('btnText').style.display = 'inline';
-                document.getElementById('btnLoader').style.display = 'none';
-                document.getElementById('submitBtn').disabled = false;
                 document.getElementById('regForm').reset();
                 document.getElementById('previewImg').classList.add('hide');
                 document.getElementById('uploadPlaceholder').classList.remove('hide');
-                selectedFile = null;
+                compressedDataUrl = null;
+                window.setView('thanks');
+            } catch(e) {
+                console.error(e); alert("Registration failed.");
+            } finally {
+                btnText.classList.remove('hide'); btnLoader.classList.add('hide');
             }
         };
 
-        // -------------------------
-        // 3. PLAYER LIST & DELETE
-        // -------------------------
-        window.viewPlayers = async () => {
-            document.getElementById('thanks-section').classList.add('hide');
-            document.getElementById('registration-section').classList.add('hide');
-            document.getElementById('list-section').classList.remove('hide');
-            
-            const playerGrid = document.getElementById('playerGrid');
-            playerGrid.innerHTML = '<div class="text-vplCyan text-center col-span-full py-10"><div class="loader inline-block"></div> Loading Players...</div>';
+        window.setView = (v) => {
+            ['registerView', 'thanksView', 'listView'].forEach(id => document.getElementById(id).classList.add('hide'));
+            document.getElementById(v+'View').classList.remove('hide');
+            if(v === 'list') window.fetchPlayers();
+        };
 
+        window.fetchPlayers = async () => {
+            const grid = document.getElementById('playerGrid');
+            grid.innerHTML = '<div class="col-span-full py-20 text-center text-vplCyan flex flex-col items-center"><i class="fa-solid fa-circle-notch fa-spin text-4xl mb-4"></i></div>';
             try {
                 const q = query(collection(db, "players"), orderBy("timestamp", "desc"));
-                const querySnapshot = await getDocs(q);
-                playerGrid.innerHTML = ''; 
-                globalPlayers = [];
-                let totalStorageUsed = 0;
+                const snap = await getDocs(q);
+                globalPlayers = snap.docs.map(doc => ({id: doc.id, ...doc.data()}));
+                
+                if(snap.empty) { grid.innerHTML = '<div class="col-span-full text-center text-white/40 py-20 font-bold tracking-widest uppercase text-sm">No players registered.</div>'; return; }
 
-                if(querySnapshot.empty) {
-                    playerGrid.innerHTML = '<p class="text-gray-400 col-span-full text-center py-10">No players registered yet.</p>';
-                    updateStorageUI(0);
-                    return;
-                }
-
-                querySnapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    const id = docSnap.id;
-                    data.id = id;
-                    globalPlayers.push(data);
-                    
-                    // Track Storage (Firebase Free Tier is 5GB = 5120 MB)
-                    totalStorageUsed += (data.sizeMB || 1.5); // Fallback to 1.5MB if old doc doesn't have size
-
-                    let roleIcon = data.role === 'Batsman' ? 'fa-baseball-bat-ball' : data.role === 'Bowler' ? 'fa-baseball' : 'fa-star';
-                    let roleColor = data.role === 'Batsman' ? 'text-blue-400' : data.role === 'Bowler' ? 'text-red-400' : 'text-vplGold';
-
-                    const cardHtml = `
-                        <div class="glass rounded-xl overflow-hidden shadow-lg flex flex-col h-full border border-gray-700 relative">
-                            <!-- Admin Delete Button -->
-                            ${isAdmin ? `<button onclick="deletePlayer('${id}', '${data.storagePath}')" class="absolute top-2 right-2 bg-red-600 text-white w-8 h-8 rounded-full z-10 shadow-lg hover:bg-red-800"><i class="fa-solid fa-trash text-sm"></i></button>` : ''}
-                            
-                            <!-- Full Photo Display (Uncropped) -->
-                            <div class="w-full h-64 bg-black flex items-center justify-center border-b-2 border-vplGold overflow-hidden p-2">
-                                <img src="${data.photoURL}" class="max-w-full max-h-full object-contain drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]" alt="${data.name}">
-                            </div>
-                            <div class="p-4 flex-grow flex flex-col justify-between">
-                                <div>
-                                    <h3 class="text-lg font-black text-white uppercase truncate">${data.name}</h3>
-                                    <p class="text-xs font-bold ${roleColor} mt-1 uppercase flex items-center gap-2"><i class="fa-solid ${roleIcon}"></i> ${data.role}</p>
-                                </div>
-                                <button onclick="openDownloadModal('${id}')" class="mt-4 w-full border border-vplCyan text-vplCyan hover:bg-vplCyan hover:text-black font-bold py-2 rounded transition text-sm">
-                                    <i class="fa-solid fa-download mr-1"></i> Download Card
-                                </button>
-                            </div>
+                grid.innerHTML = globalPlayers.map(p => {
+                    let roleIcon = p.role === 'Batsman' ? 'fa-baseball-bat-ball text-vplCyan' : p.role === 'Bowler' ? 'fa-crosshairs text-red-400' : 'fa-star text-vplGold';
+                    return `
+                    <div class="glass rounded-2xl overflow-hidden group border border-white/5 flex flex-col shadow-lg bg-black/60 relative">
+                        ${isAdmin ? `<button onclick="deletePlayer('${p.id}')" class="absolute top-3 right-3 p-2 bg-red-500/90 text-white rounded-full z-10"><i class="fa-solid fa-trash text-xs"></i></button>`:''}
+                        <div class="aspect-[4/5] bg-black/80 flex items-center justify-center p-3 overflow-hidden border-b border-white/5 relative">
+                            <img src="${p.photoData}" class="max-w-full max-h-full object-cover relative z-10 drop-shadow-2xl rounded-xl">
                         </div>
-                    `;
-                    playerGrid.innerHTML += cardHtml;
-                });
-
-                if(isAdmin) updateStorageUI(totalStorageUsed);
-
-            } catch (error) {
-                console.error(error);
-                playerGrid.innerHTML = '<p class="text-red-500 col-span-full text-center">Failed to load players. Check Firestore Rules.</p>';
-            }
+                        <div class="p-4 sm:p-5 flex-grow flex flex-col">
+                            <h3 class="text-lg sm:text-xl font-black uppercase text-white truncate">${p.name}</h3>
+                            <div class="mt-1 sm:mt-2 flex items-center gap-2"><i class="fa-solid ${roleIcon}"></i> <span class="text-[9px] sm:text-[10px] font-bold text-white/70 uppercase tracking-widest">${p.role}</span></div>
+                            <button onclick="exportSingleCard('${p.id}')" class="mt-4 sm:mt-6 w-full border border-vplCyan/70 text-vplCyan py-3 rounded-xl font-black text-[9px] sm:text-[10px] tracking-widest hover:bg-vplCyan hover:text-vplDark transition-all"><i class="fa-solid fa-download mr-1"></i> GENERATE HD CARD</button>
+                        </div>
+                    </div>`;
+                }).join('');
+            } catch(e) { console.error(e); }
         };
 
-        function updateStorageUI(usedMB) {
-            const limitMB = 5120; // 5 GB
-            const perc = ((usedMB / limitMB) * 100).toFixed(2);
-            document.getElementById('storageTracker').innerHTML = `Storage Used: ${usedMB.toFixed(2)} MB / 5120 MB (${perc}%)`;
+        window.deletePlayer = async (id) => {
+            if(!confirm("Delete this player?")) return;
+            await deleteDoc(doc(db, "players", id));
+            fetchPlayers();
+        };
+
+        window.openAdminModal = () => document.getElementById('adminModal').classList.remove('hide');
+        window.closeAdminModal = () => document.getElementById('adminModal').classList.add('hide');
+        window.loginAdmin = () => {
+            if(document.getElementById('adminUser').value === 'Shahil' && document.getElementById('adminPass').value === '5964') {
+                localStorage.setItem('vpl_admin', 'true'); isAdmin = true;
+                document.getElementById('adminPanelBar').classList.remove('hide');
+                closeAdminModal(); fetchPlayers();
+            } else alert("Invalid");
+        };
+        window.logoutAdmin = () => { localStorage.removeItem('vpl_admin'); isAdmin = false; window.location.reload(); };
+
+        window.exportSingleCard = async (id) => {
+            const p = globalPlayers.find(p => p.id === id);
+            if(!p) return;
+            
+            showLoader("EXPORTING " + p.name);
+            await triggerCanvasExport(p, true);
+            hideLoader();
         }
 
-        window.deletePlayer = async (docId, storagePath) => {
-            if(!confirm("Are you sure you want to delete this player permanently?")) return;
+        window.downloadAllPptx = async () => {
+            if(globalPlayers.length === 0) return;
+            showLoader("BUILDING PPTX", "Processing...");
             try {
-                // Delete from DB
-                await deleteDoc(doc(db, "players", docId));
-                // Delete from Storage
-                if(storagePath) {
-                    const storageRef = ref(storage, storagePath);
-                    await deleteObject(storageRef);
+                const pptx = new PptxGenJS();
+                pptx.layout = 'LAYOUT_16x9';
+
+                for (let i = 0; i < globalPlayers.length; i++) {
+                    const p = globalPlayers[i];
+                    document.getElementById('exportStatusCount').innerText = `Rendering ${i+1} of ${globalPlayers.length}`;
+                    const dataUrl = await triggerCanvasExport(p, false);
+                    if(dataUrl) {
+                        let slide = pptx.addSlide();
+                        slide.background = { color: '000000' };
+                        slide.addImage({ data: dataUrl, x: 0, y: 0, w: '100%', h: '100%' });
+                    }
                 }
-                alert("Player Deleted Successfully.");
-                viewPlayers(); // Refresh list
-            } catch(e) {
-                console.error(e);
-                alert("Error deleting player.");
-            }
-        };
-
-        window.showRegistration = () => {
-            document.getElementById('list-section').classList.add('hide');
-            document.getElementById('thanks-section').classList.add('hide');
-            document.getElementById('registration-section').classList.remove('hide');
-        };
-
-        // -------------------------
-        // 4. AUCTION CARD GENERATOR (GENIUS LOGIC)
-        // -------------------------
-        
-        // Helper: Bypass Canvas CORS issues by converting external URL to Base64
-        async function getBase64ImageFromUrl(imageUrl) {
-            const res = await fetch(imageUrl);
-            const blob = await res.blob();
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result);
-                reader.onerror = reject;
-                reader.readAsDataURL(blob);
-            });
+                await pptx.writeFile({ fileName: 'VPL_2026_All_Player_Cards.pptx' });
+            } catch(e) { console.error(e); alert('Error building PPTX'); }
+            hideLoader();
         }
 
-        window.openDownloadModal = (playerId) => {
-            currentDownloadPlayer = globalPlayers.find(p => p.id === playerId);
-            document.getElementById('downloadModal').classList.remove('hide');
-        };
-
-        window.closeDownloadModal = () => {
-            document.getElementById('downloadModal').classList.add('hide');
-            document.getElementById('downloadingLoader').classList.add('hide');
-        };
-
-        window.executeDownload = async (format) => {
-            if(!currentDownloadPlayer) return;
+        async function triggerCanvasExport(p, triggerDownloadFile) {
+            const layout = document.getElementById('layout-pc');
             
-            // Show Loader
-            document.getElementById('downloadingLoader').classList.remove('hide');
-
-            const p = currentDownloadPlayer;
-            const layoutId = `layout-${format}`;
-            const layoutElement = document.getElementById(layoutId);
+            const iconClass = p.role === 'Batsman' ? 'fa-baseball-bat-ball' : p.role === 'Bowler' ? 'fa-crosshairs' : 'fa-star';
             
-            // Role Styling
-            let iconClass = p.role === 'Batsman' ? 'fa-baseball-bat-ball text-blue-400' : p.role === 'Bowler' ? 'fa-baseball text-red-400' : 'fa-star text-vplGold';
+            document.getElementById('export-img-pc').src = p.photoData;
+            document.getElementById('export-name-pc').innerText = p.name;
+            document.getElementById('export-role-pc').innerText = p.role;
             
-            // Populate Template Details
-            document.getElementById(`export-name-${format}`).innerText = p.name;
-            document.getElementById(`export-role-${format}`).innerText = p.role;
-            document.getElementById(`export-icon-${format}`).className = `fa-solid ${iconClass}`;
-            
-            try {
-                // Convert Image to Base64 to prevent html2canvas security error
-                const base64Img = await getBase64ImageFromUrl(p.photoURL);
-                document.getElementById(`export-img-${format}`).src = base64Img;
+            const iconEl = document.getElementById('export-icon-pc');
+            iconEl.className = `fa-solid ${iconClass}`;
 
-                // Show temporarily for screenshot
-                layoutElement.classList.remove('hidden');
+            await new Promise(r => setTimeout(r, 600)); 
 
-                // Wait tiny bit for DOM update
-                await new Promise(r => setTimeout(r, 100));
+            const canvas = await html2canvas(layout, { scale: 2, backgroundColor: '#0B0C10', logging: false, useCORS: true });
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
 
-                // Capture
-                const canvas = await html2canvas(layoutElement, {
-                    scale: 2, // High resolution
-                    useCORS: true,
-                    backgroundColor: "#0B0C10"
-                });
-
-                // Hide again
-                layoutElement.classList.add('hidden');
-
-                // Download
+            if(triggerDownloadFile) {
                 const link = document.createElement('a');
-                link.download = `VPL_2026_${p.name}_${format}.png`;
-                link.href = canvas.toDataURL('image/png');
+                link.download = `VPL2026_${p.name.replace(/\s+/g, '_')}.jpg`;
+                link.href = dataUrl;
                 link.click();
-
-            } catch(e) {
-                console.error("Canvas Error:", e);
-                alert("Failed to generate image. Try again.");
-                layoutElement.classList.add('hidden'); // ensure cleanup
-            } finally {
-                closeDownloadModal();
             }
-        };
+            return dataUrl;
+        }
+
+        function showLoader(title, subtitle = '') {
+            document.getElementById('exportLoader').classList.remove('hide');
+            document.getElementById('exportStatusTitle').innerText = title;
+            document.getElementById('exportStatusCount').innerText = subtitle;
+        }
+        function hideLoader() { document.getElementById('exportLoader').classList.add('hide'); }
+
+        window.setView('register');
     </script>
 </body>
-  </html>
+                </html>
