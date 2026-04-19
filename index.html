@@ -4,11 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>VPL 2K26 | Standard HTML Hub</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts & Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Export Libraries (Image, PPTX, PDF) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     
     <script>
         tailwind.config = {
@@ -45,26 +53,6 @@
             100% { transform: scale(1); opacity: 1; }
         }
 
-        /* Sprite Sheet Animation & 3D Faking Tricks */
-        .sprite-character {
-            width: 100%;
-            height: 100%;
-            background: url('cartoon.jpg') no-repeat;
-            background-size: 400% 300%; 
-            animation: typingLoop 0.6s step-end infinite;
-            transform: perspective(400px) rotateY(-25deg) scale(1.1);
-            transform-origin: center center;
-            mix-blend-mode: screen; 
-        }
-
-        @keyframes typingLoop {
-            0% { background-position: 0% 0%; }
-            25% { background-position: 33.333% 0%; }
-            50% { background-position: 66.666% 0%; }
-            75% { background-position: 100% 0%; }
-            100% { background-position: 100% 0%; }
-        }
-
         .hide { display: none !important; }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #0B0C10; }
@@ -82,8 +70,13 @@
             SYSTEM INITIALIZING...
         </div>
 
-        <div class="relative w-[160px] h-[160px] md:w-[200px] md:h-[200px]">
-            <div class="sprite-character absolute inset-0"></div>
+        <!-- EMOJI CLUSTER ANIMATION -->
+        <div class="relative w-[160px] h-[160px] md:w-[200px] md:h-[200px] flex items-center justify-center">
+            <div class="text-7xl relative z-20 animate-pulse drop-shadow-[0_0_20px_rgba(102,252,241,0.8)]">💻</div>
+            <div class="absolute top-2 right-2 text-4xl animate-bounce" style="animation-delay: 0.1s; animation-duration: 2s;">🏏</div>
+            <div class="absolute bottom-2 left-2 text-4xl animate-bounce" style="animation-delay: 0.3s; animation-duration: 2.2s;">⚾</div>
+            <div class="absolute top-10 left-2 text-3xl animate-pulse drop-shadow-[0_0_10px_rgba(242,169,0,0.8)]" style="animation-delay: 0.5s;">🏆</div>
+            
             <div class="absolute inset-[-15px] border-2 border-vplCyan/10 rounded-full animate-[spin_4s_linear_infinite] border-t-vplCyan shadow-[0_0_20px_rgba(102,252,241,0.2)]"></div>
             <div class="absolute inset-[-30px] border border-vplGold/10 rounded-full animate-[spin_6s_linear_infinite_reverse] border-b-vplGold"></div>
         </div>
@@ -191,11 +184,31 @@
 
     <!-- MAIN: List -->
     <main id="listView" class="max-w-7xl mx-auto px-4 pb-24 z-10 relative hide">
+        
+        <!-- ADMIN DASHBOARD CONTROLS -->
+        <div id="adminControls" class="hide bg-red-900/20 border border-red-500/30 p-5 rounded-2xl mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5 shadow-lg">
+            <div class="w-full sm:w-auto flex-grow">
+                <div class="flex justify-between items-end mb-2">
+                    <span class="text-white text-xs sm:text-sm font-bold tracking-widest uppercase"><i class="fa-solid fa-cloud mr-1 text-vplCyan"></i> Firebase Free Tier (1GB)</span>
+                    <span id="storageUsageText" class="text-vplCyan text-[10px] sm:text-xs font-black">Calculating...</span>
+                </div>
+                <div class="w-full bg-black/50 h-2.5 rounded-full overflow-hidden border border-white/10">
+                    <div id="storageBar" class="bg-gradient-to-r from-vplCyan to-blue-500 h-full transition-all duration-1000" style="width: 0%"></div>
+                </div>
+            </div>
+            <button onclick="downloadPdfData()" class="w-full sm:w-auto bg-gradient-to-r from-red-600 to-red-800 hover:from-red-500 hover:to-red-700 border border-red-400/50 text-white px-5 py-3 rounded-xl text-xs font-black uppercase tracking-widest shadow-[0_0_15px_rgba(220,38,38,0.4)] transition-all flex items-center justify-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-file-pdf"></i> Download PDF Details
+            </button>
+        </div>
+
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 border-b border-white/10 pb-6 gap-4">
-            <h2 class="text-2xl sm:text-3xl font-black tracking-tight text-white m-0"><span class="text-vplGold">2K26</span> PLAYER LIST</h2>
+            <h2 class="text-2xl sm:text-3xl font-black tracking-tight text-white m-0 flex items-center gap-3">
+                <span><span class="text-vplGold">2K26</span> PLAYER LIST</span>
+                <span id="playerCountBadge" class="bg-vplCyan text-vplDark text-sm px-3 py-1 rounded-full font-black drop-shadow-md">0</span>
+            </h2>
             <div class="flex items-center gap-2 sm:gap-3">
                 <button onclick="downloadAllPptx()" class="bg-purple-500/10 border border-purple-500/30 text-purple-400 px-5 py-2.5 rounded-xl text-[11px] font-black tracking-widest flex items-center gap-2 hover:bg-purple-500 hover:text-white transition-all hidden sm:flex">
-                    <i class="fa-solid fa-file-powerpoint"></i> DOWNLOAD ALL CARDS (PPTX)
+                    <i class="fa-solid fa-file-powerpoint"></i> DOWNLOAD PPTX
                 </button>
                 <button onclick="fetchPlayers()" class="p-2.5 rounded-xl bg-black/40 border border-white/10 hover:text-vplCyan transition-colors"><i class="fa-solid fa-arrows-rotate"></i></button>
                 <button onclick="setView('register')" class="bg-vplCyan/10 border border-vplCyan/30 text-vplCyan px-4 sm:px-5 py-2.5 rounded-xl text-[10px] sm:text-[11px] font-black tracking-widest flex items-center gap-2 hover:bg-vplCyan hover:text-vplDark transition-all">
@@ -206,7 +219,7 @@
         
         <div class="sm:hidden mb-6">
              <button onclick="downloadAllPptx()" class="w-full bg-purple-500/10 border border-purple-500/30 text-purple-400 px-5 py-3.5 rounded-xl text-[11px] font-black tracking-widest flex items-center justify-center gap-2 hover:bg-purple-500 hover:text-white transition-all">
-                <i class="fa-solid fa-file-powerpoint"></i> DOWNLOAD ALL CARDS
+                <i class="fa-solid fa-file-powerpoint"></i> DOWNLOAD PPTX
              </button>
         </div>
 
@@ -216,7 +229,7 @@
     <!-- LOADING OVERLAY -->
     <div id="exportLoader" class="fixed inset-0 bg-black/90 backdrop-blur-xl z-[100] flex items-center justify-center p-4 flex-col text-center hide">
         <i class="fa-solid fa-circle-notch fa-spin text-vplGold text-5xl sm:text-6xl mb-6"></i>
-        <h3 id="exportStatusTitle" class="text-xl sm:text-2xl font-black text-white uppercase tracking-widest">BUILDING EXPORT</h3>
+        <h3 id="exportStatusTitle" class="text-xl sm:text-2xl font-black text-white uppercase tracking-widest">PROCESSING</h3>
         <p id="exportStatusCount" class="text-vplCyan font-bold tracking-widest uppercase mt-4 text-xs sm:text-sm"></p>
     </div>
 
@@ -237,22 +250,15 @@
     <!-- PC Layout 1280x720 ENHANCED PREMIUM EXPORT FORMATTING -->
     <div style="position: absolute; top: -9999px; left: -9999px; pointer-events: none; opacity: 0; overflow: hidden; width: 0; height: 0;">
         <div id="layout-pc" style="width: 1280px; height: 720px; font-family: 'Montserrat', sans-serif; background-color: #0B0C10; color: #ffffff; display: flex; border: 16px solid #F2A900; position: relative; box-sizing: border-box; background-image: radial-gradient(circle at 80% 20%, rgba(102,252,241,0.05) 0%, transparent 50%);">
-            
             <div style="position: absolute; inset: 0; background-color: transparent; z-index: 0;"></div>
             
-            <!-- Left Side: Centered & Framed Photo -->
             <div style="width: 45%; height: 100%; background-color: #11131a; display: flex; align-items: center; justify-content: center; padding: 48px; border-right: 8px solid #66FCF1; position: relative; z-index: 10; box-shadow: 5px 0 30px rgba(0,0,0,0.8); box-sizing: border-box;">
-                
                 <div style="width: 100%; height: 100%; border-radius: 24px; border: 4px solid rgba(102,252,241,0.3); overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); background-color: #000;">
-                    <!-- object-fit: cover and object-position centers the image beautifully -->
                     <img id="export-img-pc" style="width: 100%; height: 100%; object-fit: cover; object-position: center 20%; filter: drop-shadow(0 0 20px rgba(0,0,0,0.8));">
                 </div>
-
             </div>
             
-            <!-- Right Side: Upgraded Typography & Gradients -->
             <div style="width: 55%; height: 100%; background-color: transparent; display: flex; flex-direction: column; justify-content: center; padding: 0 64px; position: relative; z-index: 10; box-sizing: border-box;">
-                
                 <div style="display: block; margin-bottom: 50px;">
                     <h1 style="margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; font-size: 110px; font-weight: 900; line-height: 1; color: white; text-shadow: 0 10px 20px rgba(0,0,0,0.5);">VPL 2K26</h1>
                     <p style="margin: 0; padding: 0; padding-left: 6px; margin-top: 12px; font-family: 'Montserrat', sans-serif; font-size: 32px; font-weight: 700; color: #66FCF1; text-transform: uppercase; letter-spacing: 0.4em;">PLAYER AUCTION</p>
@@ -266,7 +272,6 @@
                         <span id="export-role-pc" style="margin: 0; padding: 0; padding-top: 4px; font-family: 'Montserrat', sans-serif; font-size: 38px; font-weight: 900; color: #F2A900; text-transform: uppercase; letter-spacing: 0.1em; display: inline-block; vertical-align: middle;"></span>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
@@ -291,7 +296,11 @@
         let isAdmin = localStorage.getItem('vpl_admin') === 'true';
         let compressedDataUrl = null;
 
-        if(isAdmin) document.getElementById('adminPanelBar').classList.remove('hide');
+        // Admin UI Initializer
+        if(isAdmin) {
+            document.getElementById('adminPanelBar').classList.remove('hide');
+            document.getElementById('adminControls').classList.remove('hide');
+        }
 
         window.addEventListener('load', () => {
             setTimeout(() => {
@@ -371,13 +380,39 @@
             if(v === 'list') window.fetchPlayers();
         };
 
+        // Storage Estimate Logic
+        function updateStorageTracker() {
+            if(!isAdmin) return;
+            // Calculate approximate JSON string size in bytes
+            const bytes = new Blob([JSON.stringify(globalPlayers)]).size;
+            const mb = (bytes / (1024 * 1024)).toFixed(2);
+            const limitMb = 1024; // 1 GB free tier
+            let percent = ((mb / limitMb) * 100).toFixed(3);
+            
+            // If less than 0.001%, show minimum visual indicator
+            const displayMb = mb == 0.00 ? "< 0.01" : mb;
+            const widthPercent = percent < 1 && percent > 0 ? 1 : Math.min(percent, 100);
+
+            document.getElementById('storageUsageText').innerText = `${displayMb} MB / ${limitMb} MB (${percent}%)`;
+            document.getElementById('storageBar').style.width = `${widthPercent}%`;
+            
+            // Change color if getting full
+            if(percent > 80) document.getElementById('storageBar').className = "bg-red-500 h-full transition-all duration-1000";
+        }
+
         window.fetchPlayers = async () => {
             const grid = document.getElementById('playerGrid');
             grid.innerHTML = '<div class="col-span-full py-20 text-center text-vplCyan flex flex-col items-center"><i class="fa-solid fa-circle-notch fa-spin text-4xl mb-4"></i></div>';
+            document.getElementById('playerCountBadge').innerText = "...";
+
             try {
                 const q = query(collection(db, "players"), orderBy("timestamp", "desc"));
                 const snap = await getDocs(q);
                 globalPlayers = snap.docs.map(doc => ({id: doc.id, ...doc.data()}));
+                
+                // Update Player Count & Storage
+                document.getElementById('playerCountBadge').innerText = globalPlayers.length;
+                updateStorageTracker();
                 
                 if(snap.empty) { grid.innerHTML = '<div class="col-span-full text-center text-white/40 py-20 font-bold tracking-widest uppercase text-sm">No players registered.</div>'; return; }
 
@@ -411,10 +446,61 @@
             if(document.getElementById('adminUser').value === 'Shahil' && document.getElementById('adminPass').value === '5964') {
                 localStorage.setItem('vpl_admin', 'true'); isAdmin = true;
                 document.getElementById('adminPanelBar').classList.remove('hide');
+                document.getElementById('adminControls').classList.remove('hide');
                 closeAdminModal(); fetchPlayers();
             } else alert("Invalid");
         };
         window.logoutAdmin = () => { localStorage.removeItem('vpl_admin'); isAdmin = false; window.location.reload(); };
+
+        // PDF Generation for Admins
+        window.downloadPdfData = () => {
+            if(globalPlayers.length === 0) return alert("No player data to download.");
+            
+            showLoader("GENERATING PDF");
+            
+            setTimeout(() => {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // Document Header
+                doc.setFontSize(22);
+                doc.setTextColor(11, 12, 16); // vplDark
+                doc.text("VPL 2K26 - Player Registration Data", 14, 20);
+                
+                doc.setFontSize(10);
+                doc.setTextColor(100);
+                doc.text(`Total Players Registered: ${globalPlayers.length}`, 14, 30);
+                doc.text(`Date Exported: ${new Date().toLocaleString()}`, 14, 35);
+                
+                // Table Data Prep
+                const tableColumn = ["#", "Player Name", "Phone Number", "Assigned Role"];
+                const tableRows = [];
+
+                globalPlayers.forEach((player, index) => {
+                    const playerData = [
+                        index + 1,
+                        player.name,
+                        player.phone,
+                        player.role
+                    ];
+                    tableRows.push(playerData);
+                });
+
+                // Generate AutoTable
+                doc.autoTable({
+                    startY: 45,
+                    head: [tableColumn],
+                    body: tableRows,
+                    theme: 'striped',
+                    headStyles: { fillColor: [31, 40, 51], textColor: [102, 252, 241] }, // vplCard and vplCyan
+                    alternateRowStyles: { fillColor: [245, 245, 245] },
+                    styles: { font: 'helvetica', fontSize: 10 }
+                });
+
+                doc.save('VPL_2026_Player_Directory.pdf');
+                hideLoader();
+            }, 500); // Small timeout to allow loader UI to paint
+        }
 
         window.exportSingleCard = async (id) => {
             const p = globalPlayers.find(p => p.id === id);
@@ -483,4 +569,4 @@
         window.setView('register');
     </script>
 </body>
-                </html>
+        </html>
